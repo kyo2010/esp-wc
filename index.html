@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru-RU">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+  <meta name="viewport" content="width=device-width, initial-scale=1"/> 
+  <link rel="stylesheet" href="w3.css?5"/>  
+  <script type="text/javascript" src="jquery-3.4.0.min.js?5"></script> 
+  <title>ESP8266</title>    
+</head> 
+<body>  
+
+    <div class="w3-container" ng-app="myApp" ng-controller="infoCtrl">
+      <p></p>
+      <div class="w3-container w3-card-4 w3-round" >
+        <div class='w3-blue-gray w3-round' style="margin:15px 0px 15px 0px; padding:10px 10px 10px 10px">
+          <b>Welcome to esp!</b> 
+        </div>  
+
+        <div>
+          <label>Your ESP chip ID : </label>           
+          <div id="chip_id" style="font-weight: bold">
+            <img src="loader.gif"/>
+          </div>          
+        </div>
+        <div><p></p></div>
+        <div>
+          <label>PINS </label>           
+          <div id="pins">
+            <img src="loader.gif"/>
+          </div>          
+        </div>
+        <div></div>
+
+        <p></p>        
+        <a href="setup.html" class="w3-button w3-round w3-blue-gray">Setup</a>
+        <p></p> 
+      </div>
+      <p></p>
+    </div>
+    
+    <script>
+      $.get("info.lua", function(info, status){      
+        document.getElementById('chip_id').innerHTML = info.chipid;
+        document.getElementById('pins').innerHTML = ""; 
+        for (pin in info.PINS) {
+          document.getElementById('pins').innerHTML += pin+" : <b>"+info.PINS[pin].value+"</b><br/>\n";
+        }
+      }); 
+    </script>
+    
+</body>
+</html>

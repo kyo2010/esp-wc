@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html  lang="ru-RU">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>   
+  <link rel="stylesheet" href="w3.css?4"/>  
+  <script type="text/javascript" src="jquery-3.4.0.min.js?5"></script> 
+  <title>ESP8266</title>
+</head>
+<body>
+    <div class="w3-container w3-xxxlarge1">
+      <p></p>      
+            
+      <div class="w3-container w3-card-4 w3-round" ng-app="myApp" ng-controller="setupCtrl" >
+       
+        <div class='w3-blue-gray w3-round' style="margin:15px 0px 15px 0px; padding:10px 10px 10px 10px">
+          <b>Setup</b>
+        </div>
+
+        <div id="loader" style="display:block">
+          <p></p> 
+            <img src="loader.gif"/>
+          <p></p>
+        </div> 
+
+          
+
+        <div id="form" style="display:none">
+        <div>
+          <label>connect Info : </label>
+          <div id="connectInfo"  style="font-weight: bold" >            
+          </div>  
+        </div>
+        <p></p>
+        
+        <div>
+          <label>Wifi name : </label>
+          <div>
+           <input type="text" ng-model="wname" id="wname" />
+
+           <select id="listOfAP" onchange="document.getElementById('wname').value=this.options[this.selectedIndex].value">             
+           </select>
+                          
+          </div>  
+        </div>
+
+        <div>
+          <label>Wifi password : </label>
+          <div>
+            <input type="text" ng-model="wpwd" id="wpwd"/>
+          </div>
+        </div>
+
+        <div>
+          <label>Don't sleep : </label>
+          <input type="checkbox" ng-model="sleepFlag" id="sleepFlag" value="1" />          
+        </div>
+        <p></p>
+
+        <div id="initValues">         
+        </div>
+
+        <div>
+          <label>WC-system : </label>
+          <div>
+            <input type="text" ng-model="wcsystem" id="wcsystem"/> <a onclick="goto_wc()" class="w3-button w3-round w3-blue-gray">...</a>
+          </div>
+        </div>      
+
+        <div>
+          <label>Your Login for WC-system : </label>
+          <div>
+            <input type="text" ng-model="wclogin" id="wclogin"/>
+          </div>
+        </div>
+
+        <div class="w3-display-container" style="height:100px;">
+            <div class="w3-display-bottomleft">
+              <button onclick="save(0)" class="w3-button w3-round w3-blue-gray">Save</button>
+              <button onclick="save(1)" class="w3-button w3-round w3-blue-gray">Save and Restart</button>
+            </div>
+           <div class="w3-display-bottomright">                         
+              <a href="index.html" class="w3-button w3-round w3-blue-gray">Close</a>
+           </div>
+        </div> 
+        </div>
+         
+        <p></p>        
+      </div>
+      <p></p> 
+    </div> 
+
+<script>
+
+      var url_wc = "";
+      var pins = [];
+      
+      $.get("info.lua", function(info, status){
+        document.getElementById('loader').style.display = "none";
+        document.getElementById('form').style.display = "block";
+        document.getElementById('wname').value = info.wname;
+        document.getElementById('wpwd').value = info.wpwd;
+        if (info.sleepFlag=='1'){
+           document.getElementById('sleepFlag').checked = false;
+        }else{ 
+          document.getElementById('sleepFlag').checked = true;
+        }; 
+        document.getElementById('connectInfo').innerHTML = info.connectInfo;        
+        url_wc = info.wcsystem;
+        document.getElementById('wcsystem').value = info.wcsystem;
+        document.getElementById('wclogin').value = info.wclogin;        
+
+        document.getElementById('initValues').innerHTML = "";
+        for (pin in info.PINS) {
+          pins.push("pin_"+pin);
+          document.getElementById('initValues').innerHTML += "<div><label>"+pin+" : </label>"+          
+            "<div><input type=\"text\" id=\"pin_"+pin+"\" value=\""+info.PINS[pin].value+"\" /></div></div>\n";
+        };        
+      });
+
+      $.get("wifi-ap-list.lua", function(ap_list,status){        
+        listOfAP = document.getElementById('listOfAP'); 
+        listOfAP.options = {};
+        listOfAP.options[listOfAP.options.length] = new Option("AP List", "");
+        
+        for (mac in ap_list) {    
+          ap_info = ap_list[mac].split(",");
+          listOfAP.options[listOfAP.options.length] = new Option(ap_info[0],ap_info[0]);             
+        };    
+        
+      });
+
+      function save(restartFlag){ 
+        info = {
+          wname : document.getElementById('wname').value,
+          wpwd : document.getElementById('wpwd').value,
+          wcsystem : document.getElementById('wcsystem').value,
+          wclogin: document.getElementById('wclogin').value,          
+          sleepFlag : document.getElementById('sleepFlag').checked?"0":"1",
+          restart : restartFlag
+        }; 
+        for (let i=0; i<pins.length; i++) {
+          info[pins[i]] =  document.getElementById(pins[i]).value;          
+        };              
+        msg = JSON.stringify(info);
+        //alert(msg);
+        data = "info="+msg;
+        jsonContentTypeHeader = 'Content-Type: application/json\r\n';
+        $.get("info.lua",data, function(data, status){
+          alert("Result: " + data + "\nStatus: " + status);
+        },jsonContentTypeHeader);              
+      }
+
+      function goto_wc(){
+        if (url_wc!='') {
+          window.open(url_wc, "_blank");                     
+        }
+      }
+
+</script>
+    
+</body>
+</html>
